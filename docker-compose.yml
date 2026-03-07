@@ -1,0 +1,92 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/wealthtech?stringtype=unspecified
+      SPRING_DATASOURCE_USERNAME: wealthtech
+      SPRING_DATASOURCE_PASSWORD: wealthtech
+      OLLAMA_BASE_URL: http://ollama:11434
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ollama-init:
+        condition: service_completed_successfully
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: wealthtech
+      POSTGRES_USER: wealthtech
+      POSTGRES_PASSWORD: wealthtech
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wealthtech"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Remove the 'deploy' section if you don't have an NVIDIA GPU
+#    deploy:
+#      resources:
+#        reservations:
+#          devices:
+#            - driver: nvidia
+#              count: all
+#              capabilities: [gpu]
+
+#  ollama:
+#    image: ollama/ollama:latest
+#    ports:
+#      - "11434:11434"
+#    volumes:
+#      - ollama_data:/root/.ollama
+#    healthcheck:
+#      test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags || exit 1"]
+#      interval: 10s
+#      timeout: 5s
+#      retries: 10
+
+  ollama-init:
+    image: curlimages/curl:latest
+    container_name: ollama-pull-models
+    depends_on:
+      - ollama
+    networks:
+      - default
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: >
+      "
+      sleep 5;
+      curl http://ollama:11434/api/pull -d '{\"name\": \"nomic-embed-text\"}';
+      curl http://ollama:11434/api/pull -d '{\"name\": \"llama3.2\"}';
+      "
+
+#  ollama-init:
+#    image: curlimages/curl:latest
+#    depends_on:
+#      ollama:
+#        condition: service_healthy
+#    entrypoint: >
+#      sh -c "
+#        echo 'Pulling nomic-embed-text model...' &&
+#        curl -s http://ollama:11434/api/pull -d '{\"name\": \"nomic-embed-text\"}' &&
+#        echo 'Pulling llama3.2 model...' &&
+#        curl -s http://ollama:11434/api/pull -d '{\"name\": \"llama3.2\"}'
+#      "
+
+volumes:
+  postgres_data:
+  ollama_data:
