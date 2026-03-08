@@ -46,6 +46,13 @@ dependencies {
     testImplementation 'org.testcontainers:postgresql'
     testImplementation 'io.rest-assured:rest-assured:5.5.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    //lombok
+    compileOnly 'org.projectlombok:lombok:1.18.30'
+    annotationProcessor 'org.projectlombok:lombok:1.18.30'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.30'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
 test {

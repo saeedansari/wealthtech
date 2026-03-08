@@ -41,7 +41,7 @@ class SearchControllerTest {
         doc.setTitle("Utility Bill");
         doc.setContent("Electric bill for March");
         doc.setSummary("A utility bill for March.");
-        doc.setScore(0.85);
+        doc.setDistance(0.85);
 
         when(searchService.search("neviswealth"))
                 .thenReturn(new SearchResponse(List.of(client), List.of(doc)));
@@ -52,7 +52,7 @@ class SearchControllerTest {
                 .andExpect(jsonPath("$.clients[0].score").value(0.9))
                 .andExpect(jsonPath("$.documents[0].title").value("Utility Bill"))
                 .andExpect(jsonPath("$.documents[0].summary").value("A utility bill for March."))
-                .andExpect(jsonPath("$.documents[0].score").value(0.85));
+                .andExpect(jsonPath("$.documents[0].distance").value(0.85));
     }
 
     @Test

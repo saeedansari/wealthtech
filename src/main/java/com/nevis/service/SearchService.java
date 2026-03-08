@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -94,7 +93,7 @@ public class SearchService {
                     response.setCreatedAt(ts.toLocalDateTime());
                 }
                 // score is the last column
-                response.setScore(toDouble(row[row.length - 1]));
+                response.setDistance(toDouble(row[row.length - 1]));
 
                 // Generate summary on demand if not cached
                 if (response.getSummary() == null && response.getContent() != null) {
