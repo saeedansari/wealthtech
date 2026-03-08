@@ -25,17 +25,17 @@ public class TestEmbeddingService implements EmbeddingService {
     static {
         // Create similar vectors for semantically related terms.
         // "address proof" and "utility bill" share a base vector with minor perturbations
-        // so cosine similarity is high between them.
+        // so cosine distance is small between them (below the 0.22 threshold).
         float[] addressProofBase = seededVector(42);
         KNOWN_VECTORS.put("address proof", addressProofBase);
-        KNOWN_VECTORS.put("utility bill", perturbVector(addressProofBase, 0.05f));
-        KNOWN_VECTORS.put("proof of residence", perturbVector(addressProofBase, 0.08f));
+        KNOWN_VECTORS.put("utility bill", perturbVector(addressProofBase, 0.02f));
+        KNOWN_VECTORS.put("proof of residence", perturbVector(addressProofBase, 0.025f));
 
         // Financial terms cluster
         float[] financialBase = seededVector(99);
         KNOWN_VECTORS.put("financial statement", financialBase);
-        KNOWN_VECTORS.put("bank statement", perturbVector(financialBase, 0.05f));
-        KNOWN_VECTORS.put("income report", perturbVector(financialBase, 0.08f));
+        KNOWN_VECTORS.put("bank statement", perturbVector(financialBase, 0.02f));
+        KNOWN_VECTORS.put("income report", perturbVector(financialBase, 0.025f));
 
         // Unrelated term — distant vector
         KNOWN_VECTORS.put("random unrelated", seededVector(200));

@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.nevis.entity.Document;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.Data;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@Data
 public class DocumentResponse {
 
     private UUID id;
@@ -14,7 +16,7 @@ public class DocumentResponse {
     private String content;
     private String summary;
     private LocalDateTime createdAt;
-    private Double score;
+    private Double distance;
 
     public static DocumentResponse fromEntity(Document document) {
         DocumentResponse response = new DocumentResponse();
@@ -27,59 +29,4 @@ public class DocumentResponse {
         return response;
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public UUID getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(UUID clientId) {
-        this.clientId = clientId;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public String getSummary() {
-        return summary;
-    }
-
-    public void setSummary(String summary) {
-        this.summary = summary;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
-    public Double getScore() {
-        return score;
-    }
-
-    public void setScore(Double score) {
-        this.score = score;
-    }
 }

@@ -5,7 +5,6 @@ import com.nevis.entity.Document;
 import com.nevis.exception.ResourceNotFoundException;
 import com.nevis.repository.ClientRepository;
 import com.nevis.repository.DocumentRepository;
-import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;

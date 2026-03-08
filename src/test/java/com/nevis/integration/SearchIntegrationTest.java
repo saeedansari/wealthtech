@@ -96,7 +96,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.documents").isArray())
                 .andExpect(jsonPath("$.documents", hasSize(greaterThanOrEqualTo(1))))
-                .andExpect(jsonPath("$.documents[0].score").isNumber());
+                .andExpect(jsonPath("$.documents[0].distance").isNumber());
     }
 
     @Test
@@ -106,7 +106,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.documents").isArray())
                 .andExpect(jsonPath("$.documents", hasSize(greaterThanOrEqualTo(1))))
-                .andExpect(jsonPath("$.documents[0].score").isNumber());
+                .andExpect(jsonPath("$.documents[0].distance").isNumber());
     }
 
     @Test

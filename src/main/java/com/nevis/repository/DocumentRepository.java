@@ -17,11 +17,11 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
             SELECT d.*, 1 - (d.content_vector <=> CAST(:queryVectorString AS vector)) AS score
             FROM documents d
             WHERE d.content_vector IS NOT NULL
-              AND 1 - (d.content_vector <=> CAST(:queryVectorString AS vector)) >= :minScore
+              AND (d.content_vector <=> CAST(:queryVectorString AS vector)) < :distance
             ORDER BY d.content_vector <=> CAST(:queryVectorString AS vector)
             LIMIT :limit
             """, nativeQuery = true)
     List<Object[]> findBySemanticSimilarity(@Param("queryVectorString") String queryVectorString,
-                                             @Param("minScore") double minScore,
+                                             @Param("distance") double distance,
                                              @Param("limit") int limit);
 }
