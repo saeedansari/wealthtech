@@ -1,8 +1,10 @@
 package com.nevis.exception;
 
-public class ResourceNotFoundException extends RuntimeException {
+import org.springframework.http.HttpStatus;
+
+public class ResourceNotFoundException extends ValidationException {
 
     public ResourceNotFoundException(String message) {
-        super(message);
+        super(HttpStatus.NOT_FOUND, "Resource Not Found", message);
     }
 }

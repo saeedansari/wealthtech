@@ -88,14 +88,16 @@ public class ClientController {
                             responseCode = "400",
                             description = "Validation error",
                             content = @Content(
-                                    mediaType = "application/json",
+                                    mediaType = "application/problem+json",
                                     examples = @ExampleObject(
                                             value = """
                                                     {
-                                                      "timestamp": "2025-03-15T10:30:00",
+                                                      "type": "/errors/type/validation",
+                                                      "title": "Validation Error",
                                                       "status": 400,
-                                                      "error": "Validation failed",
-                                                      "messages": [
+                                                      "detail": "Request validation failed",
+                                                      "instance": "/v1/clients",
+                                                      "errors": [
                                                         "firstName: firstName is required",
                                                         "email: email is required"
                                                       ]

@@ -52,7 +52,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Client not found with id: " + fakeId));
+                .andExpect(jsonPath("$.detail").value("Client not found with id: " + fakeId));
     }
 
     @Test
@@ -66,7 +66,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.messages").isArray());
+                .andExpect(jsonPath("$.errors").isArray());
     }
 
     @Test
@@ -80,7 +80,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.messages").isArray());
+                .andExpect(jsonPath("$.errors").isArray());
     }
 
     @Test

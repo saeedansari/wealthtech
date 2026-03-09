@@ -77,14 +77,15 @@ public class SearchController {
                             responseCode = "400",
                             description = "Missing or blank query parameter",
                             content = @Content(
-                                    mediaType = "application/json",
+                                    mediaType = "application/problem+json",
                                     examples = @ExampleObject(
                                             value = """
                                                     {
-                                                      "timestamp": "2025-03-15T10:30:00",
+                                                      "type": "/errors/type/validation",
+                                                      "title": "Missing Parameter",
                                                       "status": 400,
-                                                      "error": "Bad Request",
-                                                      "message": "Required request parameter 'q' for method parameter type String is not present"
+                                                      "detail": "Required request parameter 'q' for method parameter type String is not present",
+                                                      "instance": "/v1/search"
                                                     }
                                                     """
                                     )

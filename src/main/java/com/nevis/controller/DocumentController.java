@@ -74,14 +74,16 @@ public class DocumentController {
                             responseCode = "400",
                             description = "Validation error",
                             content = @Content(
-                                    mediaType = "application/json",
+                                    mediaType = "application/problem+json",
                                     examples = @ExampleObject(
                                             value = """
                                                     {
-                                                      "timestamp": "2025-03-15T10:35:00",
+                                                      "type": "/errors/type/validation",
+                                                      "title": "Validation Error",
                                                       "status": 400,
-                                                      "error": "Validation failed",
-                                                      "messages": [
+                                                      "detail": "Request validation failed",
+                                                      "instance": "/v1/clients/a1b2c3d4-e5f6-7890-abcd-ef1234567890/documents",
+                                                      "errors": [
                                                         "title: title is required"
                                                       ]
                                                     }
@@ -93,14 +95,15 @@ public class DocumentController {
                             responseCode = "404",
                             description = "Client not found",
                             content = @Content(
-                                    mediaType = "application/json",
+                                    mediaType = "application/problem+json",
                                     examples = @ExampleObject(
                                             value = """
                                                     {
-                                                      "timestamp": "2025-03-15T10:35:00",
+                                                      "type": "/errors/type/validation",
+                                                      "title": "Resource Not Found",
                                                       "status": 404,
-                                                      "error": "Not Found",
-                                                      "message": "Client not found with id: a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                                                      "detail": "Client not found with id: a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                                                      "instance": "/v1/clients/a1b2c3d4-e5f6-7890-abcd-ef1234567890/documents"
                                                     }
                                                     """
                                     )
