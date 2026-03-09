@@ -119,11 +119,11 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void search_documentsHaveSummary() throws Exception {
+    void search_documentsDoNotIncludeSummary() throws Exception {
         mockMvc.perform(get(SEARCH_URL).param("q", "utility bill"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.documents").isArray())
-                .andExpect(jsonPath("$.documents[0].summary").isString());
+                .andExpect(jsonPath("$.documents[0].summary").doesNotExist());
     }
 
     @Test

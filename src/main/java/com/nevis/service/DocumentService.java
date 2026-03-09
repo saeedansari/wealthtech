@@ -41,28 +41,25 @@ public class DocumentService {
     }
 
     private float[] generateEmbedding(DocumentRequest request) {
-        float[] embedding = null;
+        String textToEmbed = summarizeOrFallback(request);
         try {
-            String summary = summarizationService.summarize(request.getContent());
-            if (summary != null) {
-                return embeddingService.embed(summary);
-            }
-        } catch (Exception e) {
-            log.warn("Failed to summarize content, embedding document content");
-            embedding = embedOriginalDocument(request);
-        }
-        return embedding;
-    }
-
-
-    private float[] embedOriginalDocument(DocumentRequest request) {
-        try {
-            String textToEmbed = request.getTitle() + "\n\n" + request.getContent();
             return embeddingService.embed(textToEmbed);
         } catch (Exception e) {
             log.warn("Failed to generate embedding for document: {}", e.getMessage());
             return null;
         }
+    }
+
+    private String summarizeOrFallback(DocumentRequest request) {
+        try {
+            String summary = summarizationService.summarize(request.getContent());
+            if (summary != null) {
+                return summary;
+            }
+        } catch (Exception e) {
+            log.warn("Failed to summarize content, falling back to original document");
+        }
+        return request.getTitle() + "\n\n" + request.getContent();
     }
 
 }
