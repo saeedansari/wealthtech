@@ -21,7 +21,7 @@ public class DocumentService {
     private final DocumentRepository documentRepository;
     private final ClientRepository clientRepository;
     private final EmbeddingService embeddingService;
-    private final SummarizationService summarizationService;
+    private final DocumentSummarizationTask documentSummarizationTask;
 
     @Transactional
     public Document createDocument(UUID clientId, DocumentRequest request) {
@@ -37,29 +37,19 @@ public class DocumentService {
         if (embedding != null) {
             document.setContentVector(embeddingService.toVectorString(embedding));
         }
-        return documentRepository.save(document);
+        Document saved = documentRepository.save(document);
+        documentSummarizationTask.summarizeAndUpdate(saved.getId(), request.getContent());
+        return saved;
     }
 
     private float[] generateEmbedding(DocumentRequest request) {
-        String textToEmbed = summarizeOrFallback(request);
+        String textToEmbed = request.getTitle() + "\n\n" + request.getContent();
         try {
             return embeddingService.embed(textToEmbed);
         } catch (Exception e) {
             log.warn("Failed to generate embedding for document: {}", e.getMessage());
             return null;
         }
-    }
-
-    private String summarizeOrFallback(DocumentRequest request) {
-        try {
-            String summary = summarizationService.summarize(request.getContent());
-            if (summary != null) {
-                return summary;
-            }
-        } catch (Exception e) {
-            log.warn("Failed to summarize content, falling back to original document");
-        }
-        return request.getTitle() + "\n\n" + request.getContent();
     }
 
 }

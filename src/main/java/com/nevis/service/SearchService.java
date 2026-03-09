@@ -5,13 +5,17 @@ import com.nevis.dto.DocumentResponse;
 import com.nevis.dto.SearchResponse;
 import com.nevis.repository.ClientRepository;
 import com.nevis.repository.DocumentRepository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.*;
 
 @Service
 public class SearchService {
@@ -60,11 +64,11 @@ public class SearchService {
                 String[] links = (String[]) row[5];
                 response.setSocialLinks(Arrays.asList(links));
             }
-            if (row[6] instanceof Timestamp ts) {
-                response.setCreatedAt(ts.toLocalDateTime());
+            if (row[6] instanceof LocalDateTime ldt) {
+                response.setCreatedAt(ldt);
             }
-            if (row[7] instanceof Timestamp ts) {
-                response.setUpdatedAt(ts.toLocalDateTime());
+            if (row[7] instanceof LocalDateTime ldt) {
+                response.setUpdatedAt(ldt);
             }
             responses.add(response);
         }
@@ -100,8 +104,8 @@ public class SearchService {
                 response.setContent((String) row[3]);
                 // row[4] = content_vector (skip)
                 response.setSummary((String) row[5]);
-                if (row[6] instanceof Timestamp ts) {
-                    response.setCreatedAt(ts.toLocalDateTime());
+                if (row[6] instanceof LocalDateTime ldt) {
+                    response.setCreatedAt(ldt);
                 }
                 // score is the last column
                 response.setDistance(toDouble(row[row.length - 1]));
