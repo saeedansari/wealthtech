@@ -19,6 +19,6 @@ public class OpenApiConfig {
                                      "Supports keyword search across clients and semantic search across documents.")
                         .contact(new Contact()
                                 .name("Nevis Wealth")
-                                .email("grigory.sobko@neviswealth.com")));
+                                .email("john.doe@neviswealth.com")));
     }
 }

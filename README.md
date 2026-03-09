@@ -9,7 +9,7 @@ A WealthTech automation platform that provides client management, document stora
 
 ## Setup
 
-### Using Docker Compose (recommended)
+### Using Docker Compose
 
 This starts PostgreSQL (with pgvector), Ollama (with embedding and LLM models), and the application:
 
