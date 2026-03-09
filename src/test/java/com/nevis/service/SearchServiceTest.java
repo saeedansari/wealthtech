@@ -65,7 +65,7 @@ private SearchService createService(int defaultLimit, double minimumScore) {
 
         assertEquals(1, response.getDocuments().size());
         assertEquals("Bank Statement", response.getDocuments().get(0).getTitle());
-        assertEquals(0.80, response.getDocuments().get(0).getDistance());
+        assertEquals(0.80, response.getDocuments().get(0).getScore());
     }
 
     @Test

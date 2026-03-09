@@ -43,7 +43,7 @@ class SearchControllerTest {
         doc.setTitle("Utility Bill");
         doc.setContent("Electric bill for March");
         doc.setSummary("A utility bill for March.");
-        doc.setDistance(0.85);
+        doc.setScore(0.85);
 
         when(searchService.search("neviswealth"))
                 .thenReturn(new SearchResponse(List.of(client), List.of(doc)));

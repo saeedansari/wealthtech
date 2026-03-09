@@ -91,10 +91,12 @@ public class SearchService {
                 Double topScore = toDouble(topResult[topResult.length - 1]);
                 //return empty list if topScore is less than accepted minimumScore
                 if (topScore != null && topScore < minimumScore) {
+                    log.info("Top Score {} is less than minimum accepted score, returning empty", topScore);
                     return Collections.emptyList();
                 }
             }
 
+            int rowNumber = 0;
             for (Object[] row : results) {
 
                 DocumentResponse response = new DocumentResponse();
@@ -108,7 +110,9 @@ public class SearchService {
                     response.setCreatedAt(ldt);
                 }
                 // score is the last column
-                response.setDistance(toDouble(row[row.length - 1]));
+                Double score = toDouble(row[row.length - 1]);
+                log.info("Row {} Score {}", rowNumber++, score);
+                response.setScore(score);
                 responses.add(response);
             }
         } catch (Exception e) {
