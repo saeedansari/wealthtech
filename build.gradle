@@ -26,6 +26,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'org.postgresql:postgresql'
 
+    // Flyway
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
+
     // pgvector JPA support
     implementation 'com.pgvector:pgvector:0.1.6'
 
@@ -55,11 +59,6 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.30'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
-
-//test {
-//    environment "DOCKER_HOST", "unix:///Users/saeed.ansariramandi/.colima/default/docker.sock"
-//    environment "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock"
-//}
 
 tasks.named('test') {
     useJUnitPlatform()
