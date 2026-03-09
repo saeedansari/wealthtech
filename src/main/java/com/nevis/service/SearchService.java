@@ -23,17 +23,20 @@ public class SearchService {
     private final EmbeddingService embeddingService;
     private final SummarizationService summarizationService;
     private final int defaultLimit;
+    private final double minimumScore;
 
     public SearchService(ClientRepository clientRepository,
                          DocumentRepository documentRepository,
                          EmbeddingService embeddingService,
                          SummarizationService summarizationService,
-                         @Value("${search.default-limit}") int defaultLimit) {
+                         @Value("${search.default-limit}") int defaultLimit,
+                         @Value("£{search.minimum-score}") double minimumScore) {
         this.clientRepository = clientRepository;
         this.documentRepository = documentRepository;
         this.embeddingService = embeddingService;
         this.summarizationService = summarizationService;
         this.defaultLimit = defaultLimit;
+        this.minimumScore = minimumScore;
     }
 
     public SearchResponse search(String query) {
@@ -78,7 +81,18 @@ public class SearchService {
 
             List<Object[]> results = documentRepository.findBySemanticSimilarity(queryVectorString, defaultLimit);
 
+            if (!results.isEmpty()) {
+                Object[] topResult = results.get(0);
+                //check top score
+                Double topScore = toDouble(topResult[topResult.length - 1]);
+                //return empty list if topScore is less than accepted minimumScore
+                if (topScore != null && topScore < minimumScore) {
+                    return Collections.emptyList();
+                }
+            }
+
             for (Object[] row : results) {
+
                 DocumentResponse response = new DocumentResponse();
                 response.setId((UUID) row[0]);
                 response.setClientId((UUID) row[1]);
