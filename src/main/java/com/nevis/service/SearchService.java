@@ -21,20 +21,20 @@ public class SearchService {
     private final ClientRepository clientRepository;
     private final DocumentRepository documentRepository;
     private final EmbeddingService embeddingService;
-    private final SummarizationService summarizationService;
-    private final int defaultLimit;
+
+    @Value("${search.default-limit}")
+    private final Integer defaultLimit;
+    @Value("${search.minimum-score}")
     private final double minimumScore;
 
     public SearchService(ClientRepository clientRepository,
                          DocumentRepository documentRepository,
                          EmbeddingService embeddingService,
-                         SummarizationService summarizationService,
                          @Value("${search.default-limit}") int defaultLimit,
-                         @Value("£{search.minimum-score}") double minimumScore) {
+                         @Value("${search.minimum-score}") double minimumScore) {
         this.clientRepository = clientRepository;
         this.documentRepository = documentRepository;
         this.embeddingService = embeddingService;
-        this.summarizationService = summarizationService;
         this.defaultLimit = defaultLimit;
         this.minimumScore = minimumScore;
     }
@@ -105,17 +105,6 @@ public class SearchService {
                 }
                 // score is the last column
                 response.setDistance(toDouble(row[row.length - 1]));
-
-                // Generate summary on demand if not cached
-                if (response.getSummary() == null && response.getContent() != null) {
-                    try {
-                        String summary = summarizationService.summarize(response.getContent());
-                        response.setSummary(summary);
-                    } catch (Exception e) {
-                        log.warn("Failed to generate summary for document {}: {}", response.getId(), e.getMessage());
-                    }
-                }
-
                 responses.add(response);
             }
         } catch (Exception e) {

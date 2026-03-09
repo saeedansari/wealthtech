@@ -15,6 +15,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,35 +30,29 @@ class DocumentServiceTest {
     @Mock
     private EmbeddingService embeddingService;
 
+    @Mock
+    private SummarizationService summarizationService;
+
     @InjectMocks
     private DocumentService documentService;
 
-    @Test
-    void createDocument_withValidClient_savesDocument() {
-        UUID clientId = UUID.randomUUID();
-        when(clientRepository.existsById(clientId)).thenReturn(true);
+    private DocumentRequest createRequest(String title, String content) {
+        DocumentRequest request = new DocumentRequest();
+        request.setTitle(title);
+        request.setContent(content);
+        return request;
+    }
 
-        float[] fakeEmbedding = new float[]{0.1f, 0.2f, 0.3f};
-        when(embeddingService.embed(any())).thenReturn(fakeEmbedding);
-        when(embeddingService.toVectorString(fakeEmbedding)).thenReturn("[0.1,0.2,0.3]");
+    private void stubClientExists(UUID clientId) {
+        when(clientRepository.existsById(clientId)).thenReturn(true);
+    }
+
+    private void stubSave() {
         when(documentRepository.save(any(Document.class))).thenAnswer(inv -> {
             Document doc = inv.getArgument(0);
             doc.setId(UUID.randomUUID());
             return doc;
         });
-
-        DocumentRequest request = new DocumentRequest();
-        request.setTitle("Utility Bill");
-        request.setContent("Electric bill content");
-
-        Document result = documentService.createDocument(clientId, request);
-
-        assertNotNull(result.getId());
-        assertEquals(clientId, result.getClientId());
-        assertEquals("Utility Bill", result.getTitle());
-        assertEquals("Electric bill content", result.getContent());
-        assertEquals("[0.1,0.2,0.3]", result.getContentVector());
-        verify(documentRepository).save(any(Document.class));
     }
 
     @Test
@@ -65,9 +60,7 @@ class DocumentServiceTest {
         UUID clientId = UUID.randomUUID();
         when(clientRepository.existsById(clientId)).thenReturn(false);
 
-        DocumentRequest request = new DocumentRequest();
-        request.setTitle("Some Doc");
-        request.setContent("Some content");
+        DocumentRequest request = createRequest("Some Doc", "Some content");
 
         assertThrows(ResourceNotFoundException.class,
                 () -> documentService.createDocument(clientId, request));
@@ -76,20 +69,75 @@ class DocumentServiceTest {
     }
 
     @Test
-    void createDocument_whenEmbeddingFails_savesWithoutVector() {
+    void createDocument_whenSummarizationSucceeds_embedsSummary() {
         UUID clientId = UUID.randomUUID();
-        when(clientRepository.existsById(clientId)).thenReturn(true);
-        when(embeddingService.embed(any())).thenThrow(new RuntimeException("Ollama unavailable"));
-        when(documentRepository.save(any(Document.class))).thenAnswer(inv -> {
-            Document doc = inv.getArgument(0);
-            doc.setId(UUID.randomUUID());
-            return doc;
-        });
+        stubClientExists(clientId);
+        stubSave();
 
-        DocumentRequest request = new DocumentRequest();
-        request.setTitle("Title");
-        request.setContent("Content");
+        float[] summaryEmbedding = new float[]{0.5f, 0.6f};
+        when(summarizationService.summarize("Electric bill content")).thenReturn("Summary of bill");
+        when(embeddingService.embed("Summary of bill")).thenReturn(summaryEmbedding);
+        when(embeddingService.toVectorString(summaryEmbedding)).thenReturn("[0.5,0.6]");
 
+        DocumentRequest request = createRequest("Utility Bill", "Electric bill content");
+        Document result = documentService.createDocument(clientId, request);
+
+        assertEquals("[0.5,0.6]", result.getContentVector());
+        verify(embeddingService).embed("Summary of bill");
+        verify(embeddingService, never()).embed("Utility Bill\n\nElectric bill content");
+    }
+
+    @Test
+    void createDocument_whenSummarizationReturnsNull_embedsOriginalDocument() {
+        UUID clientId = UUID.randomUUID();
+        stubClientExists(clientId);
+        stubSave();
+
+        float[] fallbackEmbedding = new float[]{0.1f, 0.2f};
+        when(summarizationService.summarize(anyString())).thenReturn(null);
+        when(embeddingService.embed("Title\n\nContent")).thenReturn(fallbackEmbedding);
+        when(embeddingService.toVectorString(fallbackEmbedding)).thenReturn("[0.1,0.2]");
+
+        DocumentRequest request = createRequest("Title", "Content");
+        Document result = documentService.createDocument(clientId, request);
+
+        assertEquals("[0.1,0.2]", result.getContentVector());
+        verify(embeddingService).embed("Title\n\nContent");
+    }
+
+
+    @Test
+    void createDocument_whenSummarizationFails_embedsOriginalDocument() {
+        UUID clientId = UUID.randomUUID();
+        stubClientExists(clientId);
+        stubSave();
+
+        float[] fallbackEmbedding = new float[]{0.1f, 0.2f};
+        when(summarizationService.summarize(anyString()))
+                .thenThrow(new RuntimeException("Ollama summarization unavailable"));
+        when(embeddingService.embed("My Title\n\nMy Content")).thenReturn(fallbackEmbedding);
+        when(embeddingService.toVectorString(fallbackEmbedding)).thenReturn("[0.1,0.2]");
+
+        DocumentRequest request = createRequest("My Title", "My Content");
+        Document result = documentService.createDocument(clientId, request);
+
+        assertEquals("[0.1,0.2]", result.getContentVector());
+        verify(embeddingService).embed("My Title\n\nMy Content");
+    }
+
+
+    @Test
+    void createDocument_whenSummarizationAndEmbeddingBothFail_savesWithoutVector() {
+        UUID clientId = UUID.randomUUID();
+        stubClientExists(clientId);
+        stubSave();
+
+        when(summarizationService.summarize(anyString()))
+                .thenThrow(new RuntimeException("Summarization failed"));
+        when(embeddingService.embed(anyString()))
+                .thenThrow(new RuntimeException("Embedding failed"));
+
+        DocumentRequest request = createRequest("Title", "Content");
         Document result = documentService.createDocument(clientId, request);
 
         assertNotNull(result.getId());
@@ -97,20 +145,44 @@ class DocumentServiceTest {
         verify(documentRepository).save(any(Document.class));
     }
 
+
     @Test
-    void createDocument_embedsConcatenatedTitleAndContent() {
+    void createDocument_whenSummarizationSucceedsButEmbeddingFails_savesWithoutVector() {
         UUID clientId = UUID.randomUUID();
-        when(clientRepository.existsById(clientId)).thenReturn(true);
-        when(embeddingService.embed(any())).thenReturn(new float[]{0.1f});
+        stubClientExists(clientId);
+        stubSave();
+
+        when(summarizationService.summarize("Content")).thenReturn("A summary");
+        when(embeddingService.embed("A summary"))
+                .thenThrow(new RuntimeException("Embedding failed"));
+
+        DocumentRequest request = createRequest("Title", "Content");
+        Document result = documentService.createDocument(clientId, request);
+
+        assertNull(result.getContentVector());
+        // embed is called once with the summary; no redundant retry with original text
+        verify(embeddingService).embed("A summary");
+        verify(embeddingService, never()).embed("Title\n\nContent");
+    }
+
+
+    @Test
+    void createDocument_setsFieldsCorrectly() {
+        UUID clientId = UUID.randomUUID();
+        stubClientExists(clientId);
+        stubSave();
+
+        when(summarizationService.summarize(anyString())).thenReturn("Summary");
+        when(embeddingService.embed("Summary")).thenReturn(new float[]{0.1f});
         when(embeddingService.toVectorString(any())).thenReturn("[0.1]");
-        when(documentRepository.save(any(Document.class))).thenAnswer(inv -> inv.getArgument(0));
 
-        DocumentRequest request = new DocumentRequest();
-        request.setTitle("My Title");
-        request.setContent("My Content");
+        DocumentRequest request = createRequest("Utility Bill", "Electric bill content");
+        Document result = documentService.createDocument(clientId, request);
 
-        documentService.createDocument(clientId, request);
-
-        verify(embeddingService).embed("My Title\n\nMy Content");
+        assertNotNull(result.getId());
+        assertEquals(clientId, result.getClientId());
+        assertEquals("Utility Bill", result.getTitle());
+        assertEquals("Electric bill content", result.getContent());
+        verify(documentRepository).save(any(Document.class));
     }
 }

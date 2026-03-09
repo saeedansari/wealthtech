@@ -17,7 +17,7 @@ public interface DocumentRepository extends JpaRepository<Document, UUID> {
               1 - (d.content_vector <=> CAST(:queryVectorString AS vector)) AS score
         FROM documents d         
         WHERE d.content_vector IS NOT NULL
-        ORDER BY d.content_vector <=> CAST(:queryVectorString AS vector) desc
+        ORDER BY d.content_vector <=> CAST(:queryVectorString AS vector) ASC
         LIMIT :limit
             """, nativeQuery = true)
     List<Object[]> findBySemanticSimilarity(@Param("queryVectorString") String queryVectorString,
