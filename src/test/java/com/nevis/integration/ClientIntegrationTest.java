@@ -52,7 +52,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.messages").isArray());
+                .andExpect(jsonPath("$.errors").isArray());
     }
 
     @Test
@@ -65,7 +65,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.messages").isArray());
+                .andExpect(jsonPath("$.errors").isArray());
     }
 
     @Test
@@ -78,7 +78,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.messages").isArray());
+                .andExpect(jsonPath("$.errors").isArray());
     }
 
     @Test
@@ -92,7 +92,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.messages").isArray());
+                .andExpect(jsonPath("$.errors").isArray());
     }
 
     @Test

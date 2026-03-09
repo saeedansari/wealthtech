@@ -71,7 +71,7 @@ class DocumentControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message").value("Client not found with id: " + clientId));
+                .andExpect(jsonPath("$.detail").value("Client not found with id: " + clientId));
     }
 
     @Test
