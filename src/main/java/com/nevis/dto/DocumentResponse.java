@@ -16,7 +16,7 @@ public class DocumentResponse {
     private String content;
     private String summary;
     private LocalDateTime createdAt;
-    private Double distance;
+    private Double score;
 
     public static DocumentResponse fromEntity(Document document) {
         DocumentResponse response = new DocumentResponse();

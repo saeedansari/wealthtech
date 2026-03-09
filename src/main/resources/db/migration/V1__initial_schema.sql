@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS clients (
     );
 
 CREATE TABLE IF NOT EXISTS documents (
-                                         id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     client_id       UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
     title           VARCHAR(500) NOT NULL,
     content         TEXT NOT NULL,

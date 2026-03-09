@@ -31,7 +31,7 @@ class DocumentServiceTest {
     private EmbeddingService embeddingService;
 
     @Mock
-    private SummarizationService summarizationService;
+    private DocumentSummarizationTask documentSummarizationTask;
 
     @InjectMocks
     private DocumentService documentService;
@@ -69,71 +69,28 @@ class DocumentServiceTest {
     }
 
     @Test
-    void createDocument_whenSummarizationSucceeds_embedsSummary() {
+    void createDocument_alwaysEmbedsTitleAndContent() {
         UUID clientId = UUID.randomUUID();
         stubClientExists(clientId);
         stubSave();
 
-        float[] summaryEmbedding = new float[]{0.5f, 0.6f};
-        when(summarizationService.summarize("Electric bill content")).thenReturn("Summary of bill");
-        when(embeddingService.embed("Summary of bill")).thenReturn(summaryEmbedding);
-        when(embeddingService.toVectorString(summaryEmbedding)).thenReturn("[0.5,0.6]");
+        float[] embedding = new float[]{0.5f, 0.6f};
+        when(embeddingService.embed("Utility Bill\n\nElectric bill content")).thenReturn(embedding);
+        when(embeddingService.toVectorString(embedding)).thenReturn("[0.5,0.6]");
 
         DocumentRequest request = createRequest("Utility Bill", "Electric bill content");
         Document result = documentService.createDocument(clientId, request);
 
         assertEquals("[0.5,0.6]", result.getContentVector());
-        verify(embeddingService).embed("Summary of bill");
-        verify(embeddingService, never()).embed("Utility Bill\n\nElectric bill content");
+        verify(embeddingService).embed("Utility Bill\n\nElectric bill content");
     }
 
     @Test
-    void createDocument_whenSummarizationReturnsNull_embedsOriginalDocument() {
+    void createDocument_whenEmbeddingFails_savesWithoutVector() {
         UUID clientId = UUID.randomUUID();
         stubClientExists(clientId);
         stubSave();
 
-        float[] fallbackEmbedding = new float[]{0.1f, 0.2f};
-        when(summarizationService.summarize(anyString())).thenReturn(null);
-        when(embeddingService.embed("Title\n\nContent")).thenReturn(fallbackEmbedding);
-        when(embeddingService.toVectorString(fallbackEmbedding)).thenReturn("[0.1,0.2]");
-
-        DocumentRequest request = createRequest("Title", "Content");
-        Document result = documentService.createDocument(clientId, request);
-
-        assertEquals("[0.1,0.2]", result.getContentVector());
-        verify(embeddingService).embed("Title\n\nContent");
-    }
-
-
-    @Test
-    void createDocument_whenSummarizationFails_embedsOriginalDocument() {
-        UUID clientId = UUID.randomUUID();
-        stubClientExists(clientId);
-        stubSave();
-
-        float[] fallbackEmbedding = new float[]{0.1f, 0.2f};
-        when(summarizationService.summarize(anyString()))
-                .thenThrow(new RuntimeException("Ollama summarization unavailable"));
-        when(embeddingService.embed("My Title\n\nMy Content")).thenReturn(fallbackEmbedding);
-        when(embeddingService.toVectorString(fallbackEmbedding)).thenReturn("[0.1,0.2]");
-
-        DocumentRequest request = createRequest("My Title", "My Content");
-        Document result = documentService.createDocument(clientId, request);
-
-        assertEquals("[0.1,0.2]", result.getContentVector());
-        verify(embeddingService).embed("My Title\n\nMy Content");
-    }
-
-
-    @Test
-    void createDocument_whenSummarizationAndEmbeddingBothFail_savesWithoutVector() {
-        UUID clientId = UUID.randomUUID();
-        stubClientExists(clientId);
-        stubSave();
-
-        when(summarizationService.summarize(anyString()))
-                .thenThrow(new RuntimeException("Summarization failed"));
         when(embeddingService.embed(anyString()))
                 .thenThrow(new RuntimeException("Embedding failed"));
 
@@ -145,26 +102,22 @@ class DocumentServiceTest {
         verify(documentRepository).save(any(Document.class));
     }
 
-
     @Test
-    void createDocument_whenSummarizationSucceedsButEmbeddingFails_savesWithoutVector() {
+    void createDocument_callsAsyncSummarizationAfterSave() {
         UUID clientId = UUID.randomUUID();
         stubClientExists(clientId);
         stubSave();
 
-        when(summarizationService.summarize("Content")).thenReturn("A summary");
-        when(embeddingService.embed("A summary"))
-                .thenThrow(new RuntimeException("Embedding failed"));
+        float[] embedding = new float[]{0.1f};
+        when(embeddingService.embed("My Title\n\nMy Content")).thenReturn(embedding);
+        when(embeddingService.toVectorString(embedding)).thenReturn("[0.1]");
 
-        DocumentRequest request = createRequest("Title", "Content");
+        DocumentRequest request = createRequest("My Title", "My Content");
         Document result = documentService.createDocument(clientId, request);
 
-        assertNull(result.getContentVector());
-        // embed is called once with the summary; no redundant retry with original text
-        verify(embeddingService).embed("A summary");
-        verify(embeddingService, never()).embed("Title\n\nContent");
+        assertNotNull(result.getId());
+        verify(documentSummarizationTask).summarizeAndUpdate(result.getId(), "My Content");
     }
-
 
     @Test
     void createDocument_setsFieldsCorrectly() {
@@ -172,8 +125,8 @@ class DocumentServiceTest {
         stubClientExists(clientId);
         stubSave();
 
-        when(summarizationService.summarize(anyString())).thenReturn("Summary");
-        when(embeddingService.embed("Summary")).thenReturn(new float[]{0.1f});
+        float[] embedding = new float[]{0.1f};
+        when(embeddingService.embed("Utility Bill\n\nElectric bill content")).thenReturn(embedding);
         when(embeddingService.toVectorString(any())).thenReturn("[0.1]");
 
         DocumentRequest request = createRequest("Utility Bill", "Electric bill content");

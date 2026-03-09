@@ -21,31 +21,6 @@ The `ollama-init` service automatically pulls the required models (`nomic-embed-
 
 The API is available at `http://localhost:8080`.
 
-### Running locally
-
-1. Start PostgreSQL with pgvector and Ollama separately:
-
-```bash
-# PostgreSQL with pgvector
-docker run -d --name wealthtech-db \
-  -e POSTGRES_DB=wealthtech \
-  -e POSTGRES_USER=wealthtech \
-  -e POSTGRES_PASSWORD=wealthtech \
-  -p 5432:5432 \
-  pgvector/pgvector:pg16
-
-# Ollama
-docker run -d --name ollama -p 11434:11434 ollama/ollama:latest
-docker exec ollama ollama pull nomic-embed-text
-docker exec ollama ollama pull tinyllama
-```
-
-2. Run the application:
-
-```bash
-./gradlew bootRun
-```
-
 ### Running tests
 
 Tests use Testcontainers to spin up PostgreSQL and Ollama automatically:
@@ -180,7 +155,7 @@ Response (`200 OK`):
 
 ### 5. Semantic document search
 
-Documents are embedded using `nomic-embed-text` via Ollama. The search query is also embedded and compared using cosine distance in pgvector. Documents below the distance threshold are returned with a generated summary:
+Documents are embedded using `nomic-embed-text` via Ollama. The search query is also embedded and compared using cosine distance in pgvector. 5 top documents with higher similarity score are returned. There is soft filter which checks that highest score is above a minimum accepted score:
 
 ```bash
 curl -s "http://localhost:8080/v1/search?q=financial+statement"
