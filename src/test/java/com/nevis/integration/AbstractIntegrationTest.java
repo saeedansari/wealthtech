@@ -5,6 +5,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.ollama.OllamaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -12,6 +13,7 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class AbstractIntegrationTest {
 
     static final PostgreSQLContainer<?> postgres;
+    static final OllamaContainer ollama;
 
     static {
         postgres = new PostgreSQLContainer<>(
@@ -20,6 +22,14 @@ public abstract class AbstractIntegrationTest {
                 .withUsername("test")
                 .withPassword("test");
         postgres.start();
+
+        ollama = new OllamaContainer("ollama/ollama:0.6.2");
+        ollama.start();
+        try {
+            ollama.execInContainer("ollama", "pull", "nomic-embed-text");
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to pull nomic-embed-text model", e);
+        }
     }
 
     @DynamicPropertySource
@@ -29,5 +39,6 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
         registry.add("spring.sql.init.mode", () -> "always");
+        registry.add("ollama.base-url", ollama::getEndpoint);
     }
 }

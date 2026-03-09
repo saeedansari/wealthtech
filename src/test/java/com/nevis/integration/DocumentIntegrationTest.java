@@ -20,6 +20,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
     private MockMvc mockMvc;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String DOCUMENTS_URL = "/v1/clients/{id}/documents";
 
     @Test
     void createDocument_withValidData_returns201() throws Exception {
@@ -29,7 +30,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
         request.setTitle("Utility Bill");
         request.setContent("Monthly utility bill showing residential address at 123 Main St.");
 
-        mockMvc.perform(post("/clients/{id}/documents", clientId)
+        mockMvc.perform(post(DOCUMENTS_URL, clientId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -47,7 +48,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
         request.setTitle("Some Document");
         request.setContent("Some content");
 
-        mockMvc.perform(post("/clients/{id}/documents", fakeId)
+        mockMvc.perform(post(DOCUMENTS_URL, fakeId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -61,7 +62,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
         DocumentRequest request = new DocumentRequest();
         request.setContent("Some content");
 
-        mockMvc.perform(post("/clients/{id}/documents", clientId)
+        mockMvc.perform(post(DOCUMENTS_URL, clientId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -75,7 +76,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
         DocumentRequest request = new DocumentRequest();
         request.setTitle("A Title");
 
-        mockMvc.perform(post("/clients/{id}/documents", clientId)
+        mockMvc.perform(post(DOCUMENTS_URL, clientId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -86,7 +87,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
     void createDocument_withEmptyBody_returns400() throws Exception {
         String clientId = createTestClient("Dave", "Grohl", "dave@example.com");
 
-        mockMvc.perform(post("/clients/{id}/documents", clientId)
+        mockMvc.perform(post(DOCUMENTS_URL, clientId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
@@ -98,7 +99,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
         clientRequest.setLastName(lastName);
         clientRequest.setEmail(email);
 
-        MvcResult result = mockMvc.perform(post("/clients")
+        MvcResult result = mockMvc.perform(post("/v1/clients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(clientRequest)))
                 .andExpect(status().isCreated())

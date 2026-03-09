@@ -30,6 +30,7 @@ class DocumentControllerTest {
     private DocumentService documentService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String DOCUMENT_URL = "/v1/clients/{id}/documents";
 
     @Test
     void createDocument_returnsCreatedWithDocumentResponse() throws Exception {
@@ -46,7 +47,7 @@ class DocumentControllerTest {
         request.setTitle("Bank Statement");
         request.setContent("Q1 2025 bank statement details.");
 
-        mockMvc.perform(post("/clients/{id}/documents", clientId)
+        mockMvc.perform(post(DOCUMENT_URL, clientId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -66,7 +67,7 @@ class DocumentControllerTest {
         request.setTitle("Some Doc");
         request.setContent("Some content");
 
-        mockMvc.perform(post("/clients/{id}/documents", clientId)
+        mockMvc.perform(post(DOCUMENT_URL, clientId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -79,7 +80,7 @@ class DocumentControllerTest {
         DocumentRequest request = new DocumentRequest();
         request.setContent("Some content");
 
-        mockMvc.perform(post("/clients/{id}/documents", clientId)
+        mockMvc.perform(post(DOCUMENT_URL, clientId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -91,7 +92,7 @@ class DocumentControllerTest {
         DocumentRequest request = new DocumentRequest();
         request.setTitle("A Title");
 
-        mockMvc.perform(post("/clients/{id}/documents", clientId)
+        mockMvc.perform(post(DOCUMENT_URL, clientId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());

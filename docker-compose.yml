@@ -38,26 +38,6 @@ services:
       - "11434:11434"
     volumes:
       - ollama_data:/root/.ollama
-    # Remove the 'deploy' section if you don't have an NVIDIA GPU
-#    deploy:
-#      resources:
-#        reservations:
-#          devices:
-#            - driver: nvidia
-#              count: all
-#              capabilities: [gpu]
-
-#  ollama:
-#    image: ollama/ollama:latest
-#    ports:
-#      - "11434:11434"
-#    volumes:
-#      - ollama_data:/root/.ollama
-#    healthcheck:
-#      test: ["CMD-SHELL", "curl -f http://localhost:11434/api/tags || exit 1"]
-#      interval: 10s
-#      timeout: 5s
-#      retries: 10
 
   ollama-init:
     image: curlimages/curl:latest
@@ -71,21 +51,8 @@ services:
       "
       sleep 5;
       curl http://ollama:11434/api/pull -d '{\"name\": \"nomic-embed-text\"}';
-      curl http://ollama:11434/api/pull -d '{\"name\": \"llama3.2\"}';
+      curl http://ollama:11434/api/pull -d '{\"name\": \"tinyllama\"}';
       "
-
-#  ollama-init:
-#    image: curlimages/curl:latest
-#    depends_on:
-#      ollama:
-#        condition: service_healthy
-#    entrypoint: >
-#      sh -c "
-#        echo 'Pulling nomic-embed-text model...' &&
-#        curl -s http://ollama:11434/api/pull -d '{\"name\": \"nomic-embed-text\"}' &&
-#        echo 'Pulling llama3.2 model...' &&
-#        curl -s http://ollama:11434/api/pull -d '{\"name\": \"llama3.2\"}'
-#      "
 
 volumes:
   postgres_data:

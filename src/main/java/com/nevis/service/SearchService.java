@@ -23,20 +23,17 @@ public class SearchService {
     private final EmbeddingService embeddingService;
     private final SummarizationService summarizationService;
     private final int defaultLimit;
-    private final double minSimilarity;
 
     public SearchService(ClientRepository clientRepository,
                          DocumentRepository documentRepository,
                          EmbeddingService embeddingService,
                          SummarizationService summarizationService,
-                         @Value("${search.default-limit}") int defaultLimit,
-                         @Value("${search.min-similarity}") double minSimilarity) {
+                         @Value("${search.default-limit}") int defaultLimit) {
         this.clientRepository = clientRepository;
         this.documentRepository = documentRepository;
         this.embeddingService = embeddingService;
         this.summarizationService = summarizationService;
         this.defaultLimit = defaultLimit;
-        this.minSimilarity = minSimilarity;
     }
 
     public SearchResponse search(String query) {
@@ -79,7 +76,7 @@ public class SearchService {
             float[] queryEmbedding = embeddingService.embed(query);
             String queryVectorString = embeddingService.toVectorString(queryEmbedding);
 
-            List<Object[]> results = documentRepository.findBySemanticSimilarity(queryVectorString, minSimilarity, defaultLimit);
+            List<Object[]> results = documentRepository.findBySemanticSimilarity(queryVectorString, defaultLimit);
 
             for (Object[] row : results) {
                 DocumentResponse response = new DocumentResponse();

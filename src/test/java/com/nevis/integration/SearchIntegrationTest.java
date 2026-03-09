@@ -20,6 +20,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
+    private static final String SEARCH_URL = "/v1/search";
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     private boolean dataSeeded = false;
@@ -56,7 +57,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_byClientEmail_returnsMatchingClient() throws Exception {
-        mockMvc.perform(get("/search").param("q", "neviswealth"))
+        mockMvc.perform(get(SEARCH_URL).param("q", "neviswealth"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isArray())
                 .andExpect(jsonPath("$.clients", hasSize(greaterThanOrEqualTo(1))))
@@ -65,7 +66,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_byClientFirstName_returnsMatchingClient() throws Exception {
-        mockMvc.perform(get("/search").param("q", "John"))
+        mockMvc.perform(get(SEARCH_URL).param("q", "John"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isArray())
                 .andExpect(jsonPath("$.clients", hasSize(greaterThanOrEqualTo(1))))
@@ -74,7 +75,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_byClientLastName_returnsMatchingClient() throws Exception {
-        mockMvc.perform(get("/search").param("q", "Smith"))
+        mockMvc.perform(get(SEARCH_URL).param("q", "Smith"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isArray())
                 .andExpect(jsonPath("$.clients", hasSize(greaterThanOrEqualTo(1))))
@@ -83,16 +84,16 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_byClientDescription_returnsMatchingClient() throws Exception {
-        mockMvc.perform(get("/search").param("q", "retirement"))
+        mockMvc.perform(get(SEARCH_URL).param("q", "retirement"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isArray())
                 .andExpect(jsonPath("$.clients", hasSize(greaterThanOrEqualTo(1))));
     }
 
     @Test
-    void search_semanticDocumentSearch_addressProofFindsUtilityBill() throws Exception {
-        // "address proof" should semantically match the utility bill document
-        mockMvc.perform(get("/search").param("q", "address proof"))
+    void search_semanticDocumentSearch_residentialAddressFindsUtilityBill() throws Exception {
+        // "residential address electric bill" should semantically match the utility bill document
+        mockMvc.perform(get(SEARCH_URL).param("q", "residential address electric bill"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.documents").isArray())
                 .andExpect(jsonPath("$.documents", hasSize(greaterThanOrEqualTo(1))))
@@ -102,7 +103,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
     @Test
     void search_semanticDocumentSearch_financialStatementFindsBankStatement() throws Exception {
         // "financial statement" should semantically match the bank statement document
-        mockMvc.perform(get("/search").param("q", "financial statement"))
+        mockMvc.perform(get(SEARCH_URL).param("q", "financial statement"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.documents").isArray())
                 .andExpect(jsonPath("$.documents", hasSize(greaterThanOrEqualTo(1))))
@@ -111,7 +112,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_responseContainsBothClientsAndDocuments() throws Exception {
-        mockMvc.perform(get("/search").param("q", "financial"))
+        mockMvc.perform(get(SEARCH_URL).param("q", "financial"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isArray())
                 .andExpect(jsonPath("$.documents").isArray());
@@ -119,7 +120,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_documentsHaveSummary() throws Exception {
-        mockMvc.perform(get("/search").param("q", "utility bill"))
+        mockMvc.perform(get(SEARCH_URL).param("q", "utility bill"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.documents").isArray())
                 .andExpect(jsonPath("$.documents[0].summary").isString());
@@ -127,19 +128,19 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_withBlankQuery_returns400() throws Exception {
-        mockMvc.perform(get("/search").param("q", "   "))
+        mockMvc.perform(get(SEARCH_URL).param("q", "   "))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void search_withMissingQuery_returns400() throws Exception {
-        mockMvc.perform(get("/search"))
+        mockMvc.perform(get(SEARCH_URL))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void search_noMatchingClients_returnsEmptyClientList() throws Exception {
-        mockMvc.perform(get("/search").param("q", "zzzznonexistent"))
+        mockMvc.perform(get(SEARCH_URL).param("q", "zzzznonexistent"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isArray())
                 .andExpect(jsonPath("$.clients", hasSize(0)));
@@ -152,7 +153,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
         request.setEmail(email);
         request.setDescription(description);
 
-        MvcResult result = mockMvc.perform(post("/clients")
+        MvcResult result = mockMvc.perform(post("/v1/clients")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -166,7 +167,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
         request.setTitle(title);
         request.setContent(content);
 
-        mockMvc.perform(post("/clients/{id}/documents", clientId)
+        mockMvc.perform(post("/v1/clients/{id}/documents", clientId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());

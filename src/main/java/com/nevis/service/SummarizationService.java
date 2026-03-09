@@ -1,5 +1,6 @@
 package com.nevis.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,10 +9,8 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class SummarizationService {
-
-    private static final Logger log = LoggerFactory.getLogger(SummarizationService.class);
-
     private final WebClient webClient;
     private final String llmModel;
 
@@ -25,7 +24,7 @@ public class SummarizationService {
     public String summarize(String content) {
         log.debug("Generating summary for content of length {}", content.length());
 
-        String prompt = "Summarize the following document in 2-3 concise sentences:\n\n" + content;
+        String prompt = "Summarize the following document in 2-3 concise sentences. Focus on what document represents:\n\n" + content;
 
         Map<String, Object> request = Map.of(
                 "model", llmModel,
@@ -42,12 +41,12 @@ public class SummarizationService {
                 .block();
 
         if (response == null || !response.containsKey("response")) {
-            log.warn("Failed to get summary from Ollama");
+            log.info("Failed to get summary from Ollama");
             return null;
         }
 
         String summary = (String) response.get("response");
-        log.debug("Generated summary of length {}", summary.length());
+        log.info("Generated summary of length {}", summary.length());
         return summary.trim();
     }
 }
