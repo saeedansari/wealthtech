@@ -38,7 +38,6 @@ public abstract class AbstractIntegrationTest {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
         registry.add("spring.jpa.hibernate.ddl-auto", () -> "none");
-        registry.add("spring.sql.init.mode", () -> "always");
         registry.add("ollama.base-url", ollama::getEndpoint);
     }
 }
