@@ -18,6 +18,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
     private MockMvc mockMvc;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String CLIENTS_URL = "/v1/clients";
 
     @Test
     void createClient_withValidData_returns201() throws Exception {
@@ -28,7 +29,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
         request.setDescription("A high-net-worth client");
         request.setSocialLinks(List.of("https://linkedin.com/in/johndoe"));
 
-        mockMvc.perform(post("/clients")
+        mockMvc.perform(post(CLIENTS_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -47,7 +48,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
         request.setLastName("Doe");
         request.setEmail("john@example.com");
 
-        mockMvc.perform(post("/clients")
+        mockMvc.perform(post(CLIENTS_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -60,7 +61,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
         request.setFirstName("John");
         request.setEmail("john@example.com");
 
-        mockMvc.perform(post("/clients")
+        mockMvc.perform(post(CLIENTS_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -73,7 +74,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
         request.setFirstName("John");
         request.setLastName("Doe");
 
-        mockMvc.perform(post("/clients")
+        mockMvc.perform(post(CLIENTS_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -87,7 +88,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
         request.setLastName("Doe");
         request.setEmail("not-an-email@mail");
 
-        mockMvc.perform(post("/clients")
+        mockMvc.perform(post(CLIENTS_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -101,7 +102,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
         request.setLastName("Smith");
         request.setEmail("jane@example.com");
 
-        mockMvc.perform(post("/clients")
+        mockMvc.perform(post(CLIENTS_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -114,7 +115,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void createClient_withEmptyBody_returns400() throws Exception {
-        mockMvc.perform(post("/clients")
+        mockMvc.perform(post(CLIENTS_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());

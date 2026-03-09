@@ -26,6 +26,8 @@ class SearchControllerTest {
     @MockitoBean
     private SearchService searchService;
 
+    private static final String SEARCH_URL = "/v1/search";
+
     @Test
     void search_returnsClientsAndDocuments() throws Exception {
         ClientResponse client = new ClientResponse();
@@ -46,7 +48,7 @@ class SearchControllerTest {
         when(searchService.search("neviswealth"))
                 .thenReturn(new SearchResponse(List.of(client), List.of(doc)));
 
-        mockMvc.perform(get("/search").param("q", "neviswealth"))
+        mockMvc.perform(get(SEARCH_URL).param("q", "neviswealth"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients[0].firstName").value("John"))
                 .andExpect(jsonPath("$.clients[0].score").value(0.9))
@@ -60,7 +62,7 @@ class SearchControllerTest {
         when(searchService.search("zzzzz"))
                 .thenReturn(new SearchResponse(List.of(), List.of()));
 
-        mockMvc.perform(get("/search").param("q", "zzzzz"))
+        mockMvc.perform(get(SEARCH_URL).param("q", "zzzzz"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isEmpty())
                 .andExpect(jsonPath("$.documents").isEmpty());
@@ -68,13 +70,13 @@ class SearchControllerTest {
 
     @Test
     void search_withBlankQuery_returns400() throws Exception {
-        mockMvc.perform(get("/search").param("q", "   "))
+        mockMvc.perform(get(SEARCH_URL).param("q", "   "))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void search_withMissingQueryParam_returns400() throws Exception {
-        mockMvc.perform(get("/search"))
+        mockMvc.perform(get(SEARCH_URL))
                 .andExpect(status().isBadRequest());
     }
 }

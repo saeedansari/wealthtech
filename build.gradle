@@ -44,6 +44,7 @@ dependencies {
     testImplementation platform('org.testcontainers:testcontainers-bom:1.20.4')
     testImplementation 'org.testcontainers:junit-jupiter'
     testImplementation 'org.testcontainers:postgresql'
+    testImplementation 'org.testcontainers:testcontainers-ollama:2.0.1'
     testImplementation 'io.rest-assured:rest-assured:5.5.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
@@ -55,10 +56,10 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.30'
 }
 
-test {
-    environment "DOCKER_HOST", "unix:///Users/saeed.ansariramandi/.colima/default/docker.sock"
-    environment "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock"
-}
+//test {
+//    environment "DOCKER_HOST", "unix:///Users/saeed.ansariramandi/.colima/default/docker.sock"
+//    environment "TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE", "/var/run/docker.sock"
+//}
 
 tasks.named('test') {
     useJUnitPlatform()

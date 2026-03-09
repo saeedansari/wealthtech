@@ -29,6 +29,7 @@ class ClientControllerTest {
     private ClientService clientService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private static final String CLIENT_URL = "/v1/clients";
 
     @Test
     void createClient_returnsCreatedWithClientResponse() throws Exception {
@@ -49,7 +50,7 @@ class ClientControllerTest {
         request.setDescription("Test client");
         request.setSocialLinks(List.of("https://linkedin.com/in/john"));
 
-        mockMvc.perform(post("/clients")
+        mockMvc.perform(post(CLIENT_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -66,7 +67,7 @@ class ClientControllerTest {
         request.setLastName("Doe");
         request.setEmail("invalid-email");
 
-        mockMvc.perform(post("/clients")
+        mockMvc.perform(post(CLIENT_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -79,7 +80,7 @@ class ClientControllerTest {
         request.setLastName("Doe");
         request.setEmail("john@example.com");
 
-        mockMvc.perform(post("/clients")
+        mockMvc.perform(post(CLIENT_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -87,7 +88,7 @@ class ClientControllerTest {
 
     @Test
     void createClient_withNullBody_returns400() throws Exception {
-        mockMvc.perform(post("/clients")
+        mockMvc.perform(post(CLIENT_URL)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(""))
                 .andExpect(status().isBadRequest());

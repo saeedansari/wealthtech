@@ -11,17 +11,15 @@ import java.util.UUID;
 @Repository
 public interface DocumentRepository extends JpaRepository<Document, UUID> {
 
-    List<Document> findByClientId(UUID clientId);
-
     @Query(value = """
-            SELECT d.*, 1 - (d.content_vector <=> CAST(:queryVectorString AS vector)) AS score
-            FROM documents d
-            WHERE d.content_vector IS NOT NULL
-              AND (d.content_vector <=> CAST(:queryVectorString AS vector)) < :distance
-            ORDER BY d.content_vector <=> CAST(:queryVectorString AS vector)
-            LIMIT :limit
+        SELECT                            
+              d.*, 
+              1 - (d.content_vector <=> CAST(:queryVectorString AS vector)) AS score
+        FROM documents d         
+        WHERE d.content_vector IS NOT NULL
+        ORDER BY d.content_vector <=> CAST(:queryVectorString AS vector)
+        LIMIT :limit
             """, nativeQuery = true)
     List<Object[]> findBySemanticSimilarity(@Param("queryVectorString") String queryVectorString,
-                                             @Param("distance") double distance,
                                              @Param("limit") int limit);
 }
