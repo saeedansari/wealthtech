@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -20,6 +21,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(ClientController.class)
+@TestPropertySource(properties = "api.key=test-api-key")
 class ClientControllerTest {
 
     @Autowired
@@ -30,6 +32,7 @@ class ClientControllerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final String CLIENT_URL = "/v1/clients";
+    private static final String API_KEY = "test-api-key";
 
     @Test
     void createClient_returnsCreatedWithClientResponse() throws Exception {
@@ -51,6 +54,7 @@ class ClientControllerTest {
         request.setSocialLinks(List.of("https://linkedin.com/in/john"));
 
         mockMvc.perform(post(CLIENT_URL)
+                        .header("X-API-KEY", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -68,6 +72,7 @@ class ClientControllerTest {
         request.setEmail("invalid-email");
 
         mockMvc.perform(post(CLIENT_URL)
+                        .header("X-API-KEY", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -81,6 +86,7 @@ class ClientControllerTest {
         request.setEmail("john@example.com");
 
         mockMvc.perform(post(CLIENT_URL)
+                        .header("X-API-KEY", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -89,6 +95,7 @@ class ClientControllerTest {
     @Test
     void createClient_withNullBody_returns400() throws Exception {
         mockMvc.perform(post(CLIENT_URL)
+                        .header("X-API-KEY", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(""))
                 .andExpect(status().isBadRequest());

@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nevis.dto.ClientRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -12,10 +14,14 @@ import java.util.List;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@TestPropertySource(properties = "api.key=test-api-key")
 class ClientIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Value("${api.key}")
+    private String apiKey;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final String CLIENTS_URL = "/v1/clients";
@@ -29,7 +35,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
         request.setDescription("A high-net-worth client");
         request.setSocialLinks(List.of("https://linkedin.com/in/johndoe"));
 
-        mockMvc.perform(post(CLIENTS_URL)
+        mockMvc.perform(post(CLIENTS_URL).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -48,7 +54,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
         request.setLastName("Doe");
         request.setEmail("john@example.com");
 
-        mockMvc.perform(post(CLIENTS_URL)
+        mockMvc.perform(post(CLIENTS_URL).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -61,7 +67,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
         request.setFirstName("John");
         request.setEmail("john@example.com");
 
-        mockMvc.perform(post(CLIENTS_URL)
+        mockMvc.perform(post(CLIENTS_URL).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -74,7 +80,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
         request.setFirstName("John");
         request.setLastName("Doe");
 
-        mockMvc.perform(post(CLIENTS_URL)
+        mockMvc.perform(post(CLIENTS_URL).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -88,7 +94,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
         request.setLastName("Doe");
         request.setEmail("not-an-email@mail");
 
-        mockMvc.perform(post(CLIENTS_URL)
+        mockMvc.perform(post(CLIENTS_URL).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -102,7 +108,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
         request.setLastName("Smith");
         request.setEmail("jane@example.com");
 
-        mockMvc.perform(post(CLIENTS_URL)
+        mockMvc.perform(post(CLIENTS_URL).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -115,7 +121,7 @@ class ClientIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void createClient_withEmptyBody_returns400() throws Exception {
-        mockMvc.perform(post(CLIENTS_URL)
+        mockMvc.perform(post(CLIENTS_URL).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());

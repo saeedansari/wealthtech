@@ -6,7 +6,9 @@ import com.nevis.dto.DocumentRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -15,10 +17,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@TestPropertySource(properties = "api.key=test-api-key")
 class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Value("${api.key}")
+    private String apiKey;
 
     private static final String SEARCH_URL = "/v1/search";
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -57,7 +63,8 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_byClientEmail_returnsMatchingClient() throws Exception {
-        mockMvc.perform(get(SEARCH_URL).param("q", "neviswealth"))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", apiKey)
+                .param("q", "neviswealth"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isArray())
                 .andExpect(jsonPath("$.clients", hasSize(greaterThanOrEqualTo(1))))
@@ -66,7 +73,8 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_byClientFirstName_returnsMatchingClient() throws Exception {
-        mockMvc.perform(get(SEARCH_URL).param("q", "John"))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", apiKey)
+                .param("q", "John"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isArray())
                 .andExpect(jsonPath("$.clients", hasSize(greaterThanOrEqualTo(1))))
@@ -75,7 +83,8 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_byClientLastName_returnsMatchingClient() throws Exception {
-        mockMvc.perform(get(SEARCH_URL).param("q", "Smith"))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", apiKey)
+                .param("q", "Smith"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isArray())
                 .andExpect(jsonPath("$.clients", hasSize(greaterThanOrEqualTo(1))))
@@ -84,7 +93,8 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_byClientDescription_returnsMatchingClient() throws Exception {
-        mockMvc.perform(get(SEARCH_URL).param("q", "retirement"))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", apiKey)
+                .param("q", "retirement"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isArray())
                 .andExpect(jsonPath("$.clients", hasSize(greaterThanOrEqualTo(1))));
@@ -93,26 +103,29 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
     @Test
     void search_semanticDocumentSearch_residentialAddressFindsUtilityBill() throws Exception {
         // "residential address electric bill" should semantically match the utility bill document
-        mockMvc.perform(get(SEARCH_URL).param("q", "residential address electric bill"))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", apiKey)
+                .param("q", "residential address electric bill"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.documents").isArray())
                 .andExpect(jsonPath("$.documents", hasSize(greaterThanOrEqualTo(1))))
-                .andExpect(jsonPath("$.documents[0].distance").isNumber());
+                .andExpect(jsonPath("$.documents[0].score").isNumber());
     }
 
     @Test
     void search_semanticDocumentSearch_financialStatementFindsBankStatement() throws Exception {
         // "financial statement" should semantically match the bank statement document
-        mockMvc.perform(get(SEARCH_URL).param("q", "financial statement"))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", apiKey)
+                .param("q", "financial statement"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.documents").isArray())
                 .andExpect(jsonPath("$.documents", hasSize(greaterThanOrEqualTo(1))))
-                .andExpect(jsonPath("$.documents[0].distance").isNumber());
+                .andExpect(jsonPath("$.documents[0].score").isNumber());
     }
 
     @Test
     void search_responseContainsBothClientsAndDocuments() throws Exception {
-        mockMvc.perform(get(SEARCH_URL).param("q", "financial"))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", apiKey)
+                .param("q", "financial"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isArray())
                 .andExpect(jsonPath("$.documents").isArray());
@@ -120,7 +133,8 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_documentsDoNotIncludeSummary() throws Exception {
-        mockMvc.perform(get(SEARCH_URL).param("q", "utility bill"))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", apiKey)
+                .param("q", "utility bill"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.documents").isArray())
                 .andExpect(jsonPath("$.documents[0].summary").doesNotExist());
@@ -128,19 +142,21 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
 
     @Test
     void search_withBlankQuery_returns400() throws Exception {
-        mockMvc.perform(get(SEARCH_URL).param("q", "   "))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", apiKey)
+                .param("q", "   "))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void search_withMissingQuery_returns400() throws Exception {
-        mockMvc.perform(get(SEARCH_URL))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", apiKey))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void search_noMatchingClients_returnsEmptyClientList() throws Exception {
-        mockMvc.perform(get(SEARCH_URL).param("q", "zzzznonexistent"))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", apiKey)
+                .param("q", "zzzznonexistent"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isArray())
                 .andExpect(jsonPath("$.clients", hasSize(0)));
@@ -153,7 +169,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
         request.setEmail(email);
         request.setDescription(description);
 
-        MvcResult result = mockMvc.perform(post("/v1/clients")
+        MvcResult result = mockMvc.perform(post("/v1/clients").header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -167,7 +183,7 @@ class SearchIntegrationTest extends AbstractIntegrationTest {
         request.setTitle(title);
         request.setContent(content);
 
-        mockMvc.perform(post("/v1/clients/{id}/documents", clientId)
+        mockMvc.perform(post("/v1/clients/{id}/documents", clientId).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());

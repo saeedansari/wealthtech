@@ -8,6 +8,8 @@ services:
       SPRING_DATASOURCE_USERNAME: wealthtech
       SPRING_DATASOURCE_PASSWORD: wealthtech
       OLLAMA_BASE_URL: http://ollama:11434
+      API_KEY: ${API_KEY:changeme}
+
     depends_on:
       postgres:
         condition: service_healthy
