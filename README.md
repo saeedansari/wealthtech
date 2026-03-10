@@ -311,5 +311,7 @@ Response (`404 Not Found`):
 
 # Live Test
 The Search API is deployed and available at: https://wealthtech-production-7af1.up.railway.app
+
 Note: Access requires an API Key. Please contact the author to request credentials.
-Open Api Specification is available at: https://wealthtech-production-7af1.up.railway.app/swagger-ui/index.html
+
+OpenApi Specification is available at: https://wealthtech-production-7af1.up.railway.app/swagger-ui/index.html
