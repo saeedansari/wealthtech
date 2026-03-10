@@ -65,7 +65,7 @@ public class SearchController {
                                                           "content": "Quarterly bank statement showing financial transactions, account balance of $250,000 and investment portfolio details.",
                                                           "summary": "A quarterly bank statement for Q1 2025 showing a balance of $250,000 with investment portfolio details.",
                                                           "createdAt": "2025-03-15T10:35:00",
-                                                          "distance": 0.15
+                                                          "score": 0.15
                                                         }
                                                       ]
                                                     }

@@ -19,7 +19,7 @@ docker compose up -d
 
 The `ollama-init` service automatically pulls the required models (`nomic-embed-text` for embeddings, `tinyllama` for summarization). The application starts once PostgreSQL is healthy and models are pulled.
 
-The API is available at `http://localhost:8080`.
+The API is available locally at `http://localhost:8080`.
 
 ### Running tests
 
@@ -52,6 +52,7 @@ http://localhost:8080/swagger-ui.html
 ```bash
 curl -s -X POST http://localhost:8080/v1/clients \
   -H "Content-Type: application/json" \
+  -H "X-API-KEY: YOUR_API_KEY_HERE" \
   -d '{
     "firstName": "John",
     "lastName": "Doe",
@@ -81,6 +82,7 @@ Response (`201 Created`):
 ```bash
 curl -s -X POST http://localhost:8080/v1/clients/a1b2c3d4-e5f6-7890-abcd-ef1234567890/documents \
   -H "Content-Type: application/json" \
+  -H "X-API-KEY: YOUR_API_KEY_HERE" \
   -d '{
     "title": "Utility Bill - March 2025",
     "content": "This is a utility bill from the electric company showing the residential address at 42 Wallaby Way, Sydney. The bill amount is $150.00."
@@ -104,7 +106,8 @@ Response (`201 Created`):
 Keyword search matches against client first name, last name, email, and description using `ILIKE`:
 
 ```bash
-curl -s "http://localhost:8080/v1/search?q=John"
+curl -s "http://localhost:8080/v1/search?q=John" \
+     -H "X-API-KEY: YOUR_API_KEY_HERE"
 ```
 
 Response (`200 OK`):
@@ -130,7 +133,8 @@ Response (`200 OK`):
 ### 4. Search by email domain
 
 ```bash
-curl -s "http://localhost:8080/v1/search?q=neviswealth"
+curl -s "http://localhost:8080/v1/search?q=neviswealth" \
+     -H "X-API-KEY: YOUR_API_KEY_HERE"
 ```
 
 Response (`200 OK`):
@@ -158,7 +162,8 @@ Response (`200 OK`):
 Documents are embedded using `nomic-embed-text` via Ollama. The search query is also embedded and compared using cosine distance in pgvector. 5 top documents with higher similarity score are returned. There is soft filter which checks that highest score is above a minimum accepted score:
 
 ```bash
-curl -s "http://localhost:8080/v1/search?q=financial+statement"
+curl -s "http://localhost:8080/v1/search?q=financial+statement" \
+     -H "X-API-KEY: YOUR_API_KEY_HERE"
 ```
 
 Response (`200 OK`):
@@ -185,7 +190,8 @@ Response (`200 OK`):
 A query can match both clients (by keyword) and documents (by semantic similarity):
 
 ```bash
-curl -s "http://localhost:8080/v1/search?q=financial"
+curl -s "http://localhost:8080/v1/search?q=financial" \
+     -H "X-API-KEY: YOUR_API_KEY_HERE"
 ```
 
 Response (`200 OK`):
@@ -220,7 +226,8 @@ Response (`200 OK`):
 ### 7. No results
 
 ```bash
-curl -s "http://localhost:8080/v1/search?q=zzzznonexistent"
+curl -s "http://localhost:8080/v1/search?q=zzzznonexistent" \
+     -H "X-API-KEY: YOUR_API_KEY_HERE"
 ```
 
 Response (`200 OK`):
@@ -239,7 +246,9 @@ All errors follow the [RFC-9457 Problem Details](https://www.rfc-editor.org/rfc/
 **Missing query parameter:**
 
 ```bash
-curl -s "http://localhost:8080/v1/search"
+curl -s "http://localhost:8080/v1/search" \
+     -H "X-API-KEY: YOUR_API_KEY_HERE"
+
 ```
 
 Response (`400 Bad Request`, content type `application/problem+json`):
@@ -259,6 +268,7 @@ Response (`400 Bad Request`, content type `application/problem+json`):
 ```bash
 curl -s -X POST http://localhost:8080/v1/clients \
   -H "Content-Type: application/json" \
+  -H "X-API-KEY: YOUR_API_KEY_HERE" \
   -d '{"lastName": "Doe"}'
 ```
 
@@ -283,6 +293,7 @@ Response (`400 Bad Request`):
 ```bash
 curl -s -X POST http://localhost:8080/v1/clients/00000000-0000-0000-0000-000000000000/documents \
   -H "Content-Type: application/json" \
+  -H "X-API-KEY: YOUR_API_KEY_HERE" \
   -d '{"title": "Doc", "content": "Content"}'
 ```
 
@@ -297,3 +308,7 @@ Response (`404 Not Found`):
   "instance": "/v1/clients/00000000-0000-0000-0000-000000000000/documents"
 }
 ```
+
+# Live Test
+The Search API is deployed and available at: https://wealthtech-production-7af1.up.railway.app
+Note: Access requires an API Key. Please contact the author to request credentials.
