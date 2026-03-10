@@ -5,7 +5,9 @@ import com.nevis.dto.ClientRequest;
 import com.nevis.dto.DocumentRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -14,10 +16,14 @@ import java.util.UUID;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+@TestPropertySource(properties = "api.key=test-api-key")
 class DocumentIntegrationTest extends AbstractIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Value("${api.key}")
+    private String apiKey;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final String DOCUMENTS_URL = "/v1/clients/{id}/documents";
@@ -30,7 +36,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
         request.setTitle("Utility Bill");
         request.setContent("Monthly utility bill showing residential address at 123 Main St.");
 
-        mockMvc.perform(post(DOCUMENTS_URL, clientId)
+        mockMvc.perform(post(DOCUMENTS_URL, clientId).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -48,7 +54,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
         request.setTitle("Some Document");
         request.setContent("Some content");
 
-        mockMvc.perform(post(DOCUMENTS_URL, fakeId)
+        mockMvc.perform(post(DOCUMENTS_URL, fakeId).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -62,7 +68,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
         DocumentRequest request = new DocumentRequest();
         request.setContent("Some content");
 
-        mockMvc.perform(post(DOCUMENTS_URL, clientId)
+        mockMvc.perform(post(DOCUMENTS_URL, clientId).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -76,7 +82,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
         DocumentRequest request = new DocumentRequest();
         request.setTitle("A Title");
 
-        mockMvc.perform(post(DOCUMENTS_URL, clientId)
+        mockMvc.perform(post(DOCUMENTS_URL, clientId).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -87,7 +93,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
     void createDocument_withEmptyBody_returns400() throws Exception {
         String clientId = createTestClient("Dave", "Grohl", "dave@example.com");
 
-        mockMvc.perform(post(DOCUMENTS_URL, clientId)
+        mockMvc.perform(post(DOCUMENTS_URL, clientId).header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest());
@@ -99,7 +105,7 @@ class DocumentIntegrationTest extends AbstractIntegrationTest {
         clientRequest.setLastName(lastName);
         clientRequest.setEmail(email);
 
-        MvcResult result = mockMvc.perform(post("/v1/clients")
+        MvcResult result = mockMvc.perform(post("/v1/clients").header("X-API-KEY", apiKey)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(clientRequest)))
                 .andExpect(status().isCreated())

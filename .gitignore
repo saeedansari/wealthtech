@@ -41,3 +41,6 @@ out/
 
 ## mac
 .DS_Store
+
+## Environment
+.env

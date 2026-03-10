@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(DocumentController.class)
+@TestPropertySource(properties = "api.key=test-api-key")
 class DocumentControllerTest {
 
     @Autowired
@@ -31,6 +33,7 @@ class DocumentControllerTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private static final String DOCUMENT_URL = "/v1/clients/{id}/documents";
+    private static final String API_KEY = "test-api-key";
 
     @Test
     void createDocument_returnsCreatedWithDocumentResponse() throws Exception {
@@ -48,6 +51,7 @@ class DocumentControllerTest {
         request.setContent("Q1 2025 bank statement details.");
 
         mockMvc.perform(post(DOCUMENT_URL, clientId)
+                        .header("X-API-KEY", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -68,6 +72,7 @@ class DocumentControllerTest {
         request.setContent("Some content");
 
         mockMvc.perform(post(DOCUMENT_URL, clientId)
+                        .header("X-API-KEY", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -81,6 +86,7 @@ class DocumentControllerTest {
         request.setContent("Some content");
 
         mockMvc.perform(post(DOCUMENT_URL, clientId)
+                        .header("X-API-KEY", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -93,6 +99,7 @@ class DocumentControllerTest {
         request.setTitle("A Title");
 
         mockMvc.perform(post(DOCUMENT_URL, clientId)
+                        .header("X-API-KEY", API_KEY)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());

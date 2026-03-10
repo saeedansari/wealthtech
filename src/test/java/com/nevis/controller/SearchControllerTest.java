@@ -7,6 +7,7 @@ import com.nevis.service.SearchService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -18,6 +19,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(SearchController.class)
+@TestPropertySource(properties = "api.key=test-api-key")
 class SearchControllerTest {
 
     @Autowired
@@ -27,6 +29,7 @@ class SearchControllerTest {
     private SearchService searchService;
 
     private static final String SEARCH_URL = "/v1/search";
+    private static final String API_KEY = "test-api-key";
 
     @Test
     void search_returnsClientsAndDocuments() throws Exception {
@@ -48,13 +51,13 @@ class SearchControllerTest {
         when(searchService.search("neviswealth"))
                 .thenReturn(new SearchResponse(List.of(client), List.of(doc)));
 
-        mockMvc.perform(get(SEARCH_URL).param("q", "neviswealth"))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", API_KEY).param("q", "neviswealth"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients[0].firstName").value("John"))
                 .andExpect(jsonPath("$.clients[0].score").value(0.9))
                 .andExpect(jsonPath("$.documents[0].title").value("Utility Bill"))
                 .andExpect(jsonPath("$.documents[0].summary").value("A utility bill for March."))
-                .andExpect(jsonPath("$.documents[0].distance").value(0.85));
+                .andExpect(jsonPath("$.documents[0].score").value(0.85));
     }
 
     @Test
@@ -62,7 +65,7 @@ class SearchControllerTest {
         when(searchService.search("zzzzz"))
                 .thenReturn(new SearchResponse(List.of(), List.of()));
 
-        mockMvc.perform(get(SEARCH_URL).param("q", "zzzzz"))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", API_KEY).param("q", "zzzzz"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.clients").isEmpty())
                 .andExpect(jsonPath("$.documents").isEmpty());
@@ -70,13 +73,13 @@ class SearchControllerTest {
 
     @Test
     void search_withBlankQuery_returns400() throws Exception {
-        mockMvc.perform(get(SEARCH_URL).param("q", "   "))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", API_KEY).param("q", "   "))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void search_withMissingQueryParam_returns400() throws Exception {
-        mockMvc.perform(get(SEARCH_URL))
+        mockMvc.perform(get(SEARCH_URL).header("X-API-KEY", API_KEY))
                 .andExpect(status().isBadRequest());
     }
 }
